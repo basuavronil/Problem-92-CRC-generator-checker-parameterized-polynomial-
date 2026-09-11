@@ -25,19 +25,19 @@ The calculation is governed by the 1-bit feedback wire:
 
 ### 4. Hardware Architecture: Right-Shift LFSR Block Diagram
 
-In this right-shift configuration, data moves from left to right (from `Reg 7` down to `Reg 0`). The Most Significant Bit (`Reg 7`) receives the feedback directly, while polynomial XOR taps are placed between the registers as bits shift down toward `Reg 0`.
+In this right-shift configuration, data moves from left to right (`lfsr_reg[7]` down to `lfsr_reg[0]`). Incoming bits are XORed with the top register (`Reg 7`) to form the feedback signal, which enters directly at the MSB and drives the polynomial XOR taps as bits propagate down toward the LSB (`Reg 0`).
 
 ```text
- (MSB)                                                                                   (LSB)
+ (MSB / LHS)                                                                             (LSB / RHS)
  +-------+    +-------+    +-------+    +-------+    +-------+    +-------+    +-------+    +-------+
  | Reg 7 |--->| Reg 6 |--->| Reg 5 |--->| Reg 4 |--->| Reg 3 |--->| Reg 2 |--->| Reg 1 |--->| Reg 0 |
- +-------+    +-------+    +-------+    +-------+    +-------+    +---+---+    +---+---+    +---+---+
-     ^                                                                |            |            |
-     |                                                                v            v            v
-     |                                                             +-(+)-+      +-(+)-+      +-(+)-+
-     |                                                             | XOR |      | XOR |      | XOR |
-     |                                                             +--+--+      +--+--+      +--+--+
-     |                                                                |            |            |
-     |                                                                v            v            v
-     +----------------------------------------------------------------+------------+------------+<--- data_in
-                                     FEEDBACK WIRE: (data_in ^ Reg 0)
+ +---+---+    +-------+    +-------+    +-------+    +-------+    +---+---+    +---+---+    +-------+
+     |                                                                ^            ^
+     v                                                                |            |
+  +-----+                                                          +-(+)-+      +-(+)-+
+  | XOR |<--- data_in                                              | XOR |      | XOR |
+  +--+--+                                                          +-----+      +-----+
+     |                                                                ^            ^
+     |                                                                |            |
+     +----------------------------------------------------------------+------------+
+                                  FEEDBACK WIRE: (data_in ^ Reg 7)
