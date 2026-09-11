@@ -11,8 +11,8 @@ module crc8_right_shift (
     reg [7:0] lfsr_reg;
     wire      feedback;
 
-    // Feedback XORs incoming data with the LSB (Reg 0) for a right-shifting LFSR
-    assign feedback = data_in ^ lfsr_reg[0];
+    // XOR incoming bit with lfsr_reg[7]
+    assign feedback = data_in ^ lfsr_reg[7];
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -20,7 +20,7 @@ module crc8_right_shift (
         end else if (init) begin
             lfsr_reg <= 8'hFF;
         end else if (data_valid) begin
-            // Right-shift chain: data shifts from Reg 7 down to Reg 0
+            // Feedback enters at MSB (7) and shifts down toward LSB (0)
             lfsr_reg[7] <= feedback;
             lfsr_reg[6] <= lfsr_reg[7];
             lfsr_reg[5] <= lfsr_reg[6];
@@ -28,7 +28,7 @@ module crc8_right_shift (
             lfsr_reg[3] <= lfsr_reg[4];
             lfsr_reg[2] <= lfsr_reg[3] ^ feedback;
             lfsr_reg[1] <= lfsr_reg[2] ^ feedback;
-            lfsr_reg[0] <= lfsr_reg[1] ^ feedback;
+            lfsr_reg[0] <= lfsr_reg[1];
         end
     end
 
