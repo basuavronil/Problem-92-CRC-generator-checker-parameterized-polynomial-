@@ -22,3 +22,22 @@ The calculation is governed by the 1-bit feedback wire:
 ### 3. Register Capacity & Serial Constraints
 * **8-Bit Storage Capacity:** The module uses exactly 8 flip-flops (`lfsr_reg`), meaning it can only hold an 8-bit remainder state at any given instant.
 * **Serial Streaming:** Data must enter sequentially—one bit per clock cycle—allowing the register chain to evaluate the running remainder over time without needing large parallel XOR trees.
+
+### 4. Hardware Architecture: LFSR Block Diagram
+
+The CRC-8 calculation is performed using a Linear Feedback Shift Register (LFSR). In this diagram, the Most Significant Bit (`lfsr[7]`) is on the left. Data shifts from right to left, while the 1-bit `feedback` signal runs across the bottom to drive the XOR taps for the polynomial $x^8 + x^2 + x^1 + 1$.
+
+```text
+ (MSB)                                                                                   (LSB)
+ +-------+    +-------+    +-------+    +-------+    +-------+    +-------+    +-------+    +-------+
+ | Reg 7 |<---| Reg 6 |<---| Reg 5 |<---| Reg 4 |<---| Reg 3 |<---| Reg 2 |<---| Reg 1 |<---| Reg 0 |<---+
+ +-------+    +-------+    +-------+    +-------+    +-------+    +-------+    +-------+    +-------+   |
+     |                                                                ^            ^            ^       |
+     |                                                                |            |            |       |
+     v                                                             +-(+)-+      +-(+)-+         |       |
+ +-(+)-+                                                           | XOR |      | XOR |         |       |
+ | XOR |<--- data_in                                               +-----+      +-----+         |       |
+ +-----+                                                              |            |            |       |
+     |                                                                |            |            |       |
+     +----------------------------------------------------------------+------------+------------+-------+
+                                     FEEDBACK WIRE: (data_in ^ Reg 7)
