@@ -41,3 +41,10 @@ In this right-shift configuration, data moves from left to right (`lfsr_reg[7]` 
      |                                                                |            |
      +----------------------------------------------------------------+------------+
                                   FEEDBACK WIRE: (data_in ^ Reg 7)
+
+```
+### 5. Output
+#### Waveform 
+<img width="958" height="229" alt="image" src="https://github.com/user-attachments/assets/9788fd63-970d-476e-a746-c30cb2afdf7f" />
+#### Simulation terminal 
+<img width="723" height="413" alt="image" src="https://github.com/user-attachments/assets/39bd2b02-197c-4404-b93b-45153f1ef600" />
