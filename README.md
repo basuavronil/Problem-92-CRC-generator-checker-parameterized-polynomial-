@@ -1,4 +1,5 @@
 ## CRC-8 Generator and Checker — Key Architecture Concepts
+This design uses a right-shifting (LSB-first) LFSR based on the standard CRC-8 polynomial ($x^8 + x^2 + x^1 + 1).
 
 ### 1. Serial XOR Division & Remainder Accumulation
 * **Bit-by-Bit Processing:** Incoming data bits stream into the module serially on successive clock cycles (`data_in`).
@@ -48,3 +49,28 @@ In this right-shift configuration, data moves from left to right (`lfsr_reg[7]` 
 <img width="958" height="229" alt="image" src="https://github.com/user-attachments/assets/9788fd63-970d-476e-a746-c30cb2afdf7f" />
 #### Simulation terminal 
 <img width="723" height="413" alt="image" src="https://github.com/user-attachments/assets/39bd2b02-197c-4404-b93b-45153f1ef600" />
+
+
+## 6. Transmitter Side (`crc8_transmitter`)
+
+* **Operation:** 
+  Stream the raw message payload bits into `data_in` one bit per clock cycle while driving `data_valid` high.
+* **Output:** 
+  Once all data bits have been processed, the calculated CRC resides in `crc_out`.
+* **Behavior:** 
+  * `crc_out` will typically be a **non-zero 8-bit value**.
+  * Append this 8-bit `crc_out` value to the end of your data payload before transmitting over the bus.
+  * `error_flag` remains continuously tied to `1'b0` since error checking occurs on the receiver.
+
+---
+
+## 7. Receiver Side (`crc8_receiver`)
+
+* **Operation:** 
+  Stream the incoming raw message bits into `data_in`, **followed immediately by the 8 received CRC bits** (LSB first).
+* **Output:** 
+  Check the status of `error_flag` on the clock cycle immediately following the final CRC bit.
+* **Behavior:** 
+  * If the message was received without corruption, polynomial division cancels out the remainder, reducing `lfsr_reg` to `8'h00`.
+  * `error_flag == 1'b0` (`lfsr_reg == 8'h00`): **Data clean / No error**.
+  * `error_flag == 1'b1` (`lfsr_reg != 8'h00`): **Data corrupted / Error detected**.
